@@ -5,3 +5,4 @@ data/grafana/plugins/*
 !data/grafana/plugins/factorio-images-plugin
 data/prometheus
 *.zip
+!releases/*
