@@ -6,3 +6,4 @@ data/grafana/plugins/*
 data/prometheus
 *.zip
 !releases/*
+.DS_Store
