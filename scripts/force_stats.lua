@@ -138,44 +138,48 @@ local function collect_networks()
           end
         )
 
-        for name, n in pairs(network.get_contents()) do
-          local v = (n + 2 ^ 31) % 2 ^ 32 - 2 ^ 31
-          if item_prototypes[name] then
-            translate.translate(
-              item_prototypes[name].localised_name,
-              function(translated)
-                gauges.logistic_network_items:set(v, {force_name, surface, idx, name, translated, "contents"})
+        local output_logi = settings.global["graftorio-logistic-items"].value or false
+        if output_logi then
+          -- get logi net contents
+          for name, n in pairs(network.get_contents()) do
+            local v = (n + 2 ^ 31) % 2 ^ 32 - 2 ^ 31
+            if item_prototypes[name] then
+              translate.translate(
+                item_prototypes[name].localised_name,
+                function(translated)
+                  gauges.logistic_network_items:set(v, {force_name, surface, idx, name, translated, "contents"})
+                end
+              )
+            else
+              gauges.logistic_network_items:set(v, {force_name, surface, idx, name, name, "contents"})
+            end
+          end
+
+          -- Collect the pickups and deliveries of items
+          for point_type, point_list in pairs({provider = network.provider_points, requester = network.requester_points, storage = network.storage_points}) do
+            local pickup = {}
+            local deliver = {}
+            for _, point in pairs(point_list) do
+              for name, qty in pairs(point.targeted_items_pickup) do
+                pickup[name] = (pickup[name] or 0) + qty
               end
-            )
-          else
-            gauges.logistic_network_items:set(v, {force_name, surface, idx, name, name, "contents"})
-          end
-        end
-
-        -- Collect the pickups and deliveries of items
-        for point_type, point_list in pairs({provider = network.provider_points, requester = network.requester_points, storage = network.storage_points}) do
-          local pickup = {}
-          local deliver = {}
-          for _, point in pairs(point_list) do
-            for name, qty in pairs(point.targeted_items_pickup) do
-              pickup[name] = (pickup[name] or 0) + qty
+              for name, qty in pairs(point.targeted_items_deliver) do
+                deliver[name] = (deliver[name] or 0) + qty
+              end
             end
-            for name, qty in pairs(point.targeted_items_deliver) do
-              deliver[name] = (deliver[name] or 0) + qty
-            end
-          end
 
-          for request_type, values in pairs({["pickup"] = pickup, ["deliver"] = deliver}) do
-            for name, qty in pairs(values) do
-              if item_prototypes[name] then
-                translate.translate(
-                  item_prototypes[name].localised_name,
-                  function(translated)
-                    gauges.logistic_network_items:set(qty, {force_name, surface, idx, name, translated, point_type, request_type})
-                  end
-                )
-              else
-                gauges.logistic_network_items:set(qty, {force_name, surface, idx, name, name, point_type, request_type})
+            for request_type, values in pairs({["pickup"] = pickup, ["deliver"] = deliver}) do
+              for name, qty in pairs(values) do
+                if item_prototypes[name] then
+                  translate.translate(
+                    item_prototypes[name].localised_name,
+                    function(translated)
+                      gauges.logistic_network_items:set(qty, {force_name, surface, idx, name, translated, point_type, request_type})
+                    end
+                  )
+                else
+                  gauges.logistic_network_items:set(qty, {force_name, surface, idx, name, name, point_type, request_type})
+                end
               end
             end
           end

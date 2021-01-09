@@ -12,6 +12,12 @@ data:extend(
       name = "graftorio-server-save",
       setting_type = "runtime-global",
       default_value = 1
+    },
+    {
+      type = "bool-setting",
+      name = "graftorio-logistic-items",
+      setting_type = "runtime-global",
+      default_value = 0
     }
   }
 )

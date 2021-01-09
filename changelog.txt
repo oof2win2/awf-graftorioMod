@@ -1,4 +1,17 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.0.31
+Date: 09. 01. 2021
+  Changes:
+    - New toggle for robot pickups, dropoffs and logi contents (off by default)
+  Bugfixes:
+    - Couldn't serialize on save, this is fixed (I think)
+    - Robot pickups&dropoffs were laggy for some systems (new toggle)
+---------------------------------------------------------------------------------------------------
+Version: 1.0.29
+Date: 04. 01. 2021
+  Changes:
+    - Enabled robot pickup&dropoffs to test the performance
+---------------------------------------------------------------------------------------------------
 Version: 1.0.28
 Date: 03. 01. 2021
   Changes:
