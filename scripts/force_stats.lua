@@ -129,12 +129,13 @@ local function collect_networks()
             net_type = {cell.owner.type, cell.owner.localised_name}
           end
         end
+		local robot_limit = network.robot_limit
         translate.translate(
           net_type[2],
           function(translated)
             gauges.logistic_network_bots:set(charging, {force_name, surface, idx, "charging_bots", net_type[1], translated})
             gauges.logistic_network_bots:set(waiting_for_charge, {force_name, surface, idx, "waiting_for_charge", net_type[1], translated})
-            gauges.logistic_network_bots:set(network.robot_limit, {force_name, surface, idx, "robot_limit", net_type[1], translated})
+            gauges.logistic_network_bots:set(robot_limit, {force_name, surface, idx, "robot_limit", net_type[1], translated})
           end
         )
 

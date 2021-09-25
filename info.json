@@ -1,12 +1,10 @@
 {
   "name": "awf-graftorioMod",
-  "version": "1.0.31",
+  "version": "1.0.32",
   "title": "awf-graftorioMod",
   "author": "oof2win2",
   "description": "visualize metrics from your factorio game in grafana. This is a fork of afex/graftorio for AwF",
   "homepage": "https://github.com/oof2win2/awf-graftorioMod",
-  "dependencies": [
-    "base >= 1.0.0"
-  ],
+  "dependencies": ["base >= 1.0.0"],
   "factorio_version": "1.1"
 }
