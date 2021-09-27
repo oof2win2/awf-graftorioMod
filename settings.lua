@@ -18,6 +18,12 @@ data:extend(
       name = "graftorio-logistic-items",
       setting_type = "runtime-global",
       default_value = 0
-    }
+    },
+	{
+		type = "int-setting",
+		name = "graftorio-checking-rate",
+		setting_type = "startup",
+		default_value = "10"
+	}
   }
 )
