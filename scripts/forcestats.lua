@@ -57,37 +57,36 @@ lib.collect_loginet = function ()
 		}
 		for _, networks in pairs(force.logistic_networks) do
 			for _, network in pairs(networks) do
-				log(network.available_construction_robots)
-			stats.available_construction_robots =  network.available_construction_robots
-			stats.all_construction_robots =  network.all_construction_robots
+				stats.available_construction_robots =  network.available_construction_robots
+				stats.all_construction_robots =  network.all_construction_robots
 
-			stats.available_logistic_robots = network.available_logistic_robots
-			stats.all_logistic_robots = network.all_logistic_robots
+				stats.available_logistic_robots = network.available_logistic_robots
+				stats.all_logistic_robots = network.all_logistic_robots
 
-			stats.charging_robot_count = 0
-			stats.to_charge_robot_count = 0
-			for _, cell in pairs(network.cells) do
-				stats.charging_robot_count = (stats.charging_robot_count) + cell.charging_robot_count
-				stats.to_charge_robot_count = (stats.to_charge_robot_count) + cell.to_charge_robot_count
-			end
-
-			if settings.global["graftorio-logistic-items"].value then
-				for name, v in pairs(network.get_contents()) do
-					stats.items[name] = (stats.items[name] or 0) + v
+				stats.charging_robot_count = 0
+				stats.to_charge_robot_count = 0
+				for _, cell in pairs(network.cells) do
+					stats.charging_robot_count = (stats.charging_robot_count) + cell.charging_robot_count
+					stats.to_charge_robot_count = (stats.to_charge_robot_count) + cell.to_charge_robot_count
 				end
 
-				-- pickups and deliveries of items
-				for _, point_list in pairs({network.provider_points, network.requester_points, network.storage_points}) do
-					for _, point in pairs(point_list) do
-						for name, qty in pairs(point.targeted_items_pickup) do
-							stats.pickups[name] = (stats.pickups[name] or 0) + qty
-						  end
-						  for name, qty in pairs(point.targeted_items_deliver) do
-							stats.deliveries[name] = (stats.deliveries[name] or 0) + qty
-						  end
+				if settings.global["graftorio-logistic-items"].value then
+					for name, v in pairs(network.get_contents()) do
+						stats.items[name] = (stats.items[name] or 0) + v
+					end
+
+					-- pickups and deliveries of items
+					for _, point_list in pairs({network.provider_points, network.requester_points, network.storage_points}) do
+						for _, point in pairs(point_list) do
+							for name, qty in pairs(point.targeted_items_pickup) do
+								stats.pickups[name] = (stats.pickups[name] or 0) + qty
+							end
+							for name, qty in pairs(point.targeted_items_deliver) do
+								stats.deliveries[name] = (stats.deliveries[name] or 0) + qty
+							end
+						end
 					end
 				end
-			end
 			end
 		end
 		global.stats[force.name].robots = stats
@@ -106,8 +105,6 @@ lib.events = {
 			}
 			force_research = global.stats[research.force.name].research
 		end
-
-		force_research.current = nil
 	end,
 	[defines.events.on_research_started] = function (evt)
 		-- move queue up
@@ -120,17 +117,6 @@ lib.events = {
 				queue={},
 			}
 			force_research = global.stats[research.force.name].research
-		end
-
-		if force_research.queue[1] then
-			force_research.current = force_research.queue[1]
-			table.remove(force_research.queue, 1)
-		else
-			force_research.current = {
-				name=research.name,
-				level = research.level,
-				progress=0
-			}
 		end
 	end
 }
@@ -152,17 +138,10 @@ lib.on_nth_tick = {
 				table.insert(force_research.queue, {
 					name=research.name,
 					level=research.level,
-					progress=force.get_saved_technology_progress(research),
+					progress=force.get_saved_technology_progress(research) or 0,
 				})
 			end
-			if force.current_research then
-				force_research.current = {
-					name=force.current_research.name,
-					level=force.current_research.level,
-					progress=force.get_saved_technology_progress(force.current_research),
-				}
-			else force_research.current = nil end
-			log(serpent.line(global.stats[force.name].research))
+			if force_research.queue[1] then force_research.queue[1].progress = force.research_progress end
 		end
 	end,
 }
