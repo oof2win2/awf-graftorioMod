@@ -42,8 +42,8 @@ end
 lib.collect_loginet = function ()
 	for _, force in pairs(game.forces) do
 		local stats = global.stats[force.name].robots or {
-			all_construction_bots = 0,
-			available_construction_bots = 0,
+			all_construction_robots = 0,
+			available_construction_robots = 0,
 
 			all_logistic_robots = 0,
 			available_logistic_robots = 0,
@@ -55,20 +55,23 @@ lib.collect_loginet = function ()
 			pickups = {},
 			deliveries = {},
 		}
-		for _, network in pairs(force.logistic_networks) do
-			log(network.available_construction_bots)
-			stats.available_construction_bots = (stats.available_construction_bots or 0) + network.available_construction_bots
-			stats.all_construction_robots = (stats.all_construction_robots or 0) + network.all_construction_robots
+		for _, networks in pairs(force.logistic_networks) do
+			for _, network in pairs(networks) do
+				log(network.available_construction_robots)
+			stats.available_construction_robots =  network.available_construction_robots
+			stats.all_construction_robots =  network.all_construction_robots
 
-			stats.available_logistic_robots = (stats.available_logistic_robots or 0) + network.available_logistic_robots
-			stats.all_logistic_robots = (stats.all_logistic_robots or 0) + network.all_logistic_robots
+			stats.available_logistic_robots = network.available_logistic_robots
+			stats.all_logistic_robots = network.all_logistic_robots
 
+			stats.charging_robot_count = 0
+			stats.to_charge_robot_count = 0
 			for _, cell in pairs(network.cells) do
-				stats.charging_robot_count = (stats.charging_robot_count or 0) + cell.charging_robot_count
-				stats.to_charge_robot_count = (stats.to_charge_robot_count or 0) + cell.to_charge_robot_count
+				stats.charging_robot_count = (stats.charging_robot_count) + cell.charging_robot_count
+				stats.to_charge_robot_count = (stats.to_charge_robot_count) + cell.to_charge_robot_count
 			end
 
-			if settings.runtime["graftorio-logistic-items"].value then
+			if settings.global["graftorio-logistic-items"].value then
 				for name, v in pairs(network.get_contents()) do
 					stats.items[name] = (stats.items[name] or 0) + v
 				end
@@ -85,20 +88,23 @@ lib.collect_loginet = function ()
 					end
 				end
 			end
+			end
 		end
-		global.stats[force.name] = stats
+		global.stats[force.name].robots = stats
 	end
 end
 
 lib.events = {
 	[defines.events.on_research_finished] = function (evt)
 		local research = evt.research
+		if not global.stats[research.force.name] then global.stats[research.force.name] = {} end
 		local force_research = global.stats[research.force.name].research
 		if not force_research then
 			global.stats[research.force.name].research = {
 				current=nil,
 				queue={},
 			}
+			force_research = global.stats[research.force.name].research
 		end
 
 		force_research.current = nil
@@ -106,12 +112,14 @@ lib.events = {
 	[defines.events.on_research_started] = function (evt)
 		-- move queue up
 		local research = evt.research
+		if not global.stats[research.force.name] then global.stats[research.force.name] = {} end
 		local force_research = global.stats[research.force.name].research
 		if not force_research then
 			global.stats[research.force.name].research = {
 				current=nil,
 				queue={},
 			}
+			force_research = global.stats[research.force.name].research
 		end
 
 		if force_research.queue[1] then
@@ -127,29 +135,34 @@ lib.events = {
 	end
 }
 lib.on_nth_tick = {
-	[settings.startup["graftorio-checking-rate"].value*60] = function ()
+	[60] = function ()
 		for _, force in pairs(game.forces) do
-			local force_research = global.stats[research.force.name].research
+			if not global.stats[force.name] then global.stats[force.name] = {} end
+			local force_research = global.stats[force.name].research
 			if not force_research then
-				global.stats[research.force.name].research = {
+				global.stats[force.name].research = {
 					current=nil,
 					queue={},
 				}
+				force_research = global.stats[force.name].research
 			end
 
 			force_research.queue = {}
-			for _, research in force.research_queue do
+			for _, research in pairs(force.research_queue) do
 				table.insert(force_research.queue, {
 					name=research.name,
 					level=research.level,
 					progress=force.get_saved_technology_progress(research),
 				})
 			end
-			force_research.current = {
-				name=force.current_research.name,
-				level=force.current_research.level,
-				progress=force.get_saved_technology_progress(force.current_research),
-			}
+			if force.current_research then
+				force_research.current = {
+					name=force.current_research.name,
+					level=force.current_research.level,
+					progress=force.get_saved_technology_progress(force.current_research),
+				}
+			else force_research.current = nil end
+			log(serpent.line(global.stats[force.name].research))
 		end
 	end,
 }
