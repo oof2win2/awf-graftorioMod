@@ -66,7 +66,7 @@ lib.collect_production = function ()
 			stats.build_output[name] = buildstats
 		end
 
-		global.output.stats[force.name].production = stats
+		global.output[force.name].production = stats
 	end
 end
 

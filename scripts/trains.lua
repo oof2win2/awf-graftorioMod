@@ -300,5 +300,17 @@ lib.on_init = function ()
 		data={},
 	}
 end
+lib.migrations = {
+	["2.0.0"] = function ()
+		for _, force in pairs(game.forces) do
+			global.output[force.name].trains = {}
+		end
+	
+		global.trains = {
+			---@type table<string, ForceTrainStats>
+			data={},
+		}
+	end
+}
 
 return lib

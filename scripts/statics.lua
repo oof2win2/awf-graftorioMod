@@ -12,7 +12,7 @@ lib.collect_statics = function ()
 
 	stats.online_players = {}
 	for _, player in pairs(game.connected_players) do
-		table.insert(global.output.online_players, player.name)
+		table.insert(stats.online_players, player.name)
 	end
 
 	stats.mods = {}

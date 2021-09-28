@@ -48,10 +48,9 @@ local function get_unignored_network_entities()
 end
 
 lib.collect_power = function ()
-	global.output.power = {} -- zero out the table
-
 	for forceindex, networks in pairs(global.power.networks) do
 		local force = game.forces[forceindex]
+		global.output[force.name].power = {}
 		---@class PowerStatistics
 		---@field input double|uint64
 		---@field output double|uint64
@@ -109,5 +108,13 @@ lib.on_init = function ()
 		switches = {}
 	}
 end
+lib.migrations = {
+	["2.0.0"] = function ()
+		global.power = {
+			networks = {},
+			switches = {}
+		}
+	end
+}
 
 return lib

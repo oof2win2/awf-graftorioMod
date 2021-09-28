@@ -5,6 +5,7 @@ local statics = require("scripts.statics")
 local power = require("scripts.power")
 local trains = require("scripts.trains")
 local general = require("scripts.general")
+local migrations = require("scripts.migrations")
 
 commands.add_command("collectdata", nil, function (params)
 	forcestats.collect_production()
@@ -22,3 +23,16 @@ handler.add_lib(forcestats)
 handler.add_lib(statics)
 handler.add_lib(power)
 handler.add_lib(trains)
+
+script.on_configuration_changed(function (data)
+	if not data.mod_changes["awf-graftorioMod"] then return end
+	local old_version = data.mod_changes["awf-graftorioMod"].old_version
+
+	for _, lib in pairs({general, forcestats, statics, power, trains}) do
+		if lib.migrations then
+			for version, migration in pairs(lib.migrations) do
+				if migrations.is_newer_version(old_version, version) then migration() end
+			end
+		end
+	end
+end)
