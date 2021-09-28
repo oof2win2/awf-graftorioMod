@@ -14,7 +14,7 @@ commands.add_command("collectdata", nil, function (params)
 	power.collect_power()
 	trains.collect_trains()
 
-	game.write_file("game.txt", game.table_to_json(global.output), false)
+	game.write_file("game.prom", game.table_to_json(global.output), false)
 end)
 
 handler.add_lib(general)
