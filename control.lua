@@ -2,20 +2,17 @@ local handler = require("event_handler")
 
 local forcestats = require("scripts.forcestats")
 local statics = require("scripts.statics")
+local general = require("scripts.general")
 
 commands.add_command("collectdata", nil, function ()
 	forcestats.collect_production()
-	forcestats.collect_loginet()
+	if settings.global["graftorio-logistic-items"] then forcestats.collect_loginet() end
 	statics.collect_statics()
 
-	global.tick = game.tick
 	game.print("done")
-	game.write_file("game.txt", game.table_to_json(global), false)
+	game.write_file("game.txt", game.table_to_json(global.output), false)
 end)
 
 handler.add_lib(forcestats)
 handler.add_lib(statics)
-
-script.on_init(function ()
-	global.stats = {}
-end)
+handler.add_lib(general)

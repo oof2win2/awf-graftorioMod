@@ -2,8 +2,8 @@ local lib = {}
 
 lib.collect_production = function ()
 	for _, force in pairs(game.forces) do
-		if not global.stats[force.name] then global.stats[force.name] = {} end
-		local stats = global.stats[force.name].production or {
+		if not global.output.stats[force.name] then global.output.stats[force.name] = {} end
+		local stats = global.output.stats[force.name].production or {
 			item_input = {},
 			item_output = {},
 			fluid_input = {},
@@ -58,13 +58,24 @@ lib.collect_production = function ()
 			stats.build_output[name] = buildstats
 		end
 
-		global.stats[force.name].production = stats
+		global.output.stats[force.name].production = stats
+	end
+end
+
+lib.collect_other = function ()
+	for _, force in pairs(game.forces) do
+		global.output.stats[force.name].evolution = {
+			evolution_factor=force.evolution_factor,
+			evolution_factor_by_pollution=force.evolution_factor_by_pollution,
+			evolution_factor_by_time=force.evolution_factor_by_time,
+			evolution_factor_by_killing_spawners=force.evolution_factor_by_killing_spawners
+		}
 	end
 end
 
 lib.collect_loginet = function ()
 	for _, force in pairs(game.forces) do
-		local stats = global.stats[force.name].robots or {
+		local stats = global.output.stats[force.name].robots or {
 			all_construction_robots = 0,
 			available_construction_robots = 0,
 
@@ -112,34 +123,34 @@ lib.collect_loginet = function ()
 				end
 			end
 		end
-		global.stats[force.name].robots = stats
+		global.output.stats[force.name].robots = stats
 	end
 end
 
 lib.events = {
 	[defines.events.on_research_finished] = function (evt)
 		local research = evt.research
-		if not global.stats[research.force.name] then global.stats[research.force.name] = {} end
-		local force_research = global.stats[research.force.name].research
+		if not global.output.stats[research.force.name] then global.output.stats[research.force.name] = {} end
+		local force_research = global.output.stats[research.force.name].research
 		if not force_research then
-			global.stats[research.force.name].research = {
+			global.output.stats[research.force.name].research = {
 				current=nil,
 				queue={},
 			}
-			force_research = global.stats[research.force.name].research
+			force_research = global.output.stats[research.force.name].research
 		end
 	end,
 	[defines.events.on_research_started] = function (evt)
 		-- move queue up
 		local research = evt.research
-		if not global.stats[research.force.name] then global.stats[research.force.name] = {} end
-		local force_research = global.stats[research.force.name].research
+		if not global.output.stats[research.force.name] then global.output.stats[research.force.name] = {} end
+		local force_research = global.output.stats[research.force.name].research
 		if not force_research then
-			global.stats[research.force.name].research = {
+			global.output.stats[research.force.name].research = {
 				current=nil,
 				queue={},
 			}
-			force_research = global.stats[research.force.name].research
+			force_research = global.output.stats[research.force.name].research
 		end
 	end
 }
@@ -147,14 +158,14 @@ lib.events = {
 lib.on_nth_tick = {
 	[60] = function ()
 		for _, force in pairs(game.forces) do
-			if not global.stats[force.name] then global.stats[force.name] = {} end
-			local force_research = global.stats[force.name].research
+			if not global.output.stats[force.name] then global.output.stats[force.name] = {} end
+			local force_research = global.output.stats[force.name].research
 			if not force_research then
-				global.stats[force.name].research = {
+				global.output.stats[force.name].research = {
 					current=nil,
 					queue={},
 				}
-				force_research = global.stats[force.name].research
+				force_research = global.output.stats[force.name].research
 			end
 
 			force_research.queue = {}
