@@ -2,6 +2,11 @@ local lib = {}
 
 lib.collect_trains = function ()
 	for _, force in pairs(game.forces) do
+		---@class TrainStatistics
+		---@field total int
+		---@field waiting_time_station int
+		---@field waiting_time_signal int
+		---@field time_travelling int
 		local trainstats = {
 			total=0,
 			waiting_time_station=0,
@@ -25,7 +30,7 @@ lib.collect_trains = function ()
 			end
 		end
 
-		global.output.trains[force.name] = trainstats
+		global.output[force.name].trains = trainstats
 	end
 end
 
@@ -267,11 +272,16 @@ end
 lib.events = {
 	[defines.events.on_train_changed_state] = on_train_changed_state,
 	[defines.events.on_train_created] = on_train_created,
+	[defines.events.on_force_created] = function (evt)
+		global.output[evt.force.name].trains = {}
+	end
 }
 
 
 lib.on_init = function ()
-	global.output.trains = {}
+	for _, force in pairs(game.forces) do
+		global.output[force.name].trains = {}
+	end
 
 	
 	global.trains = {

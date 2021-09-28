@@ -48,14 +48,18 @@ local function get_unignored_network_entities()
 end
 
 lib.collect_power = function ()
-	global.output.power = {}
+	global.output.power = {} -- zero out the table
 
 	for forceindex, networks in pairs(global.power.networks) do
 		local force = game.forces[forceindex]
+		---@class PowerStatistics
+		---@field input double|uint64
+		---@field output double|uint64
 		local statistics = {
 			input=0,
 			output=0,
 		}
+		
 		local surfaces = {}
 		for _, network in pairs(networks) do
 			---@type LuaSurface
@@ -74,7 +78,7 @@ lib.collect_power = function ()
 				statistics.output = statistics.output + value
 			end
 		end
-		global.output.power[force.name] = statistics
+		global.output[force.name].power = statistics
 	end
 end
 

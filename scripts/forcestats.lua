@@ -3,7 +3,16 @@ local lib = {}
 lib.collect_production = function ()
 	for _, force in pairs(game.forces) do
 		if not global.output.stats[force.name] then global.output.stats[force.name] = {} end
-		local stats = global.output.stats[force.name].production or {
+		---@class ProductionStatistics
+		---@field item_input table<string, double|uint64>
+		---@field item_output table<string, double|uint64>
+		---@field fluid_input table<string, double|uint64>
+		---@field fluid_output table<string, double|uint64>
+		---@field kill_input table<string, double|uint64>
+		---@field kill_output table<string, double|uint64>
+		---@field build_input table<string, double|uint64>
+		---@field build_output table<string, double|uint64>
+		local stats = {
 			item_input = {},
 			item_output = {},
 			fluid_input = {},
@@ -62,20 +71,19 @@ lib.collect_production = function ()
 	end
 end
 
-lib.collect_other = function ()
-	for _, force in pairs(game.forces) do
-		global.output.stats[force.name].evolution = {
-			evolution_factor=force.evolution_factor,
-			evolution_factor_by_pollution=force.evolution_factor_by_pollution,
-			evolution_factor_by_time=force.evolution_factor_by_time,
-			evolution_factor_by_killing_spawners=force.evolution_factor_by_killing_spawners
-		}
-	end
-end
-
 lib.collect_loginet = function ()
 	for _, force in pairs(game.forces) do
-		local stats = global.output.stats[force.name].robots or {
+		---@class RobotStatistics
+		---@field all_construction_robots uint
+		---@field available_construction_robot uint
+		---@field all_logistic_robots uint
+		---@field available_logistic_robots uint
+		---@field charging_robot_count uint
+		---@field to_charge_robot_count uint
+		---@field items table<string, uint>
+		---@field pickups table<string, uint>
+		---@field deliveries table<string, uint>
+		local stats = {
 			all_construction_robots = 0,
 			available_construction_robots = 0,
 
@@ -123,34 +131,47 @@ lib.collect_loginet = function ()
 				end
 			end
 		end
-		global.output.stats[force.name].robots = stats
+		global.output[force.name].stats.robots = stats
 	end
 end
+
+---@class ResearchStatistics
+---@field current Research
+---@field queue Research[]
+
+---@class Research
+---@field name string
+---@field level uint
+---@field progress double
 
 lib.events = {
 	[defines.events.on_research_finished] = function (evt)
 		local research = evt.research
-		if not global.output.stats[research.force.name] then global.output.stats[research.force.name] = {} end
-		local force_research = global.output.stats[research.force.name].research
+		if not global.output[research.force.name] then global.output[research.force.name] = {} end
+		if not not global.output[research.force.name].other then global.output[research.force.name].other = {} end
+		
+		local force_research = global.output[research.force.name].other.research
 		if not force_research then
-			global.output.stats[research.force.name].research = {
+			global.output[research.force.name].other.research = {
 				current=nil,
 				queue={},
 			}
-			force_research = global.output.stats[research.force.name].research
+			force_research = global.output[research.force.name].other.research
 		end
 	end,
 	[defines.events.on_research_started] = function (evt)
 		-- move queue up
 		local research = evt.research
-		if not global.output.stats[research.force.name] then global.output.stats[research.force.name] = {} end
-		local force_research = global.output.stats[research.force.name].research
+		if not global.output[research.force.name] then global.output[research.force.name] = {} end
+		if not not global.output[research.force.name].other then global.output[research.force.name].other = {} end
+
+		local force_research = global.output[research.force.name].research
 		if not force_research then
-			global.output.stats[research.force.name].research = {
+			global.output[research.force.name].research = {
 				current=nil,
 				queue={},
 			}
-			force_research = global.output.stats[research.force.name].research
+			force_research = global.output[research.force.name].research
 		end
 	end
 }
@@ -158,14 +179,15 @@ lib.events = {
 lib.on_nth_tick = {
 	[60] = function ()
 		for _, force in pairs(game.forces) do
-			if not global.output.stats[force.name] then global.output.stats[force.name] = {} end
-			local force_research = global.output.stats[force.name].research
+			if not global.output[force.name].other then global.output[force.name].other = {} end
+
+			local force_research = global.output[force.name].research
 			if not force_research then
-				global.output.stats[force.name].research = {
+				global.output[force.name].research = {
 					current=nil,
 					queue={},
 				}
-				force_research = global.output.stats[force.name].research
+				force_research = global.output[force.name].research
 			end
 
 			force_research.queue = {}

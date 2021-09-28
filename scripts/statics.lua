@@ -1,22 +1,32 @@
 local lib = {}
 
-lib.collect_statics = function ()
-	global.output.tick = game.tick
+---@class StaticStatistics
+---@field tick uint
+---@field online_players string[]
+---@field mods table<string, string>
+---@field seed table<string, uint>
 
-	global.output.online_players = {}
+lib.collect_statics = function ()
+	local stats = {}
+	stats.tick = game.tick
+
+	stats.online_players = {}
 	for _, player in pairs(game.connected_players) do
 		table.insert(global.output.online_players, player.name)
 	end
 
-	global.output.mods = {}
+	stats.mods = {}
 	for name, version in pairs(game.active_mods) do
-		global.output.mods[name] = version
+		stats.mods[name] = version
 	end
 
 	-- reason behind this is that the map gen settings can be changed during runtime so just get them fresh
-	global.output.seed = {}
+	stats.seed = {}
 	for _, surface in pairs(game.surfaces) do
-		global.output.seed[surface.name] = surface.map_gen_settings.seed
+		stats.seed[surface.name] = surface.map_gen_settings.seed
+	end
+	for _, force in pairs(game.forces) do
+		global.output[force.name].other = stats
 	end
 end
 

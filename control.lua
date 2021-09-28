@@ -8,12 +8,12 @@ local general = require("scripts.general")
 
 commands.add_command("collectdata", nil, function (params)
 	forcestats.collect_production()
-	forcestats.collect_other()
+	general.collect_other()
 	if settings.global["graftorio-logistic-items"] then forcestats.collect_loginet() end
 	statics.collect_statics()
 	power.collect_power()
 	trains.collect_trains()
-	
+
 	game.print("done")
 	game.write_file("game.txt", game.table_to_json(global.output), false)
 end)
