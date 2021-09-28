@@ -147,7 +147,7 @@ lib.events = {
 	[defines.events.on_research_finished] = function (evt)
 		local research = evt.research
 		if not global.output[research.force.name] then global.output[research.force.name] = {} end
-		if not not global.output[research.force.name].other then global.output[research.force.name].other = {} end
+		if not global.output[research.force.name].other then global.output[research.force.name].other = {} end
 		
 		local force_research = global.output[research.force.name].other.research
 		if not force_research then

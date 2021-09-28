@@ -19,7 +19,9 @@ lib.migrations = {
 	["2.0.0"] = function ()
 		global.output = {}
 	for _, force in pairs(game.forces) do
-		global.output[force.name] = {}
+		global.output[force.name] = {
+			other = {}
+		}
 	end
 	end
 }

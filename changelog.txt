@@ -1,12 +1,15 @@
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.4
 Date: ????
-  Changes:
+  Bugfixes:
+    - Fix a crash when a station was not saved
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.3
 Date: 2021-09-28
   Bugfixes:
-    - More migrations with nicer developer support
+    - More migrations
+  Changes:
+    - Nicer developer support for migrations
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.2
 Date: 2021-09-28

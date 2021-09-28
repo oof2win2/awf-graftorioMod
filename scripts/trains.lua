@@ -48,11 +48,12 @@ end
 ---@field position Position
 ---@field force string
 ---@field surface SurfaceIdentification
----@field unitnumber uint|nil
+---@field unit_number uint|nil
+---@field visitors number
 
 ---@class ForceTrainStats
----@field stations SavedStation[]
----@field trains SavedTrain[]
+---@field stations table<string, SavedStation>	
+---@field trains table<uint, SavedTrain>
 
 ---Get a force of a train
 ---@param train LuaTrain|SavedTrain
@@ -127,6 +128,33 @@ local function store_saved_train(train)
 	global.trains.data[train.force].trains[train.id] = train
 end
 
+---Create a saved station
+---@param station LuaEntity
+---@return SavedStation
+local function create_station(station)
+	log("creating station")
+	if station.type ~= "train-stop" then error("LuaEntity type is not station") end
+	local unit_number = station.unit_number
+	---@type SavedStation
+	local saved_station = {
+		force=station.force.name,
+		position=station.position,
+		surface=station.surface.index,
+		unit_number = unit_number,
+		visitors=0
+	}
+
+	global.trains.data[station.force.name].stations[unit_number] = saved_station
+
+	return saved_station
+end
+
+---Store a saved station
+---@param station SavedStation
+local function store_saved_station(station)
+	global.trains.data[station.force].stations[station.unit_number] = station
+end
+
 --- Handle a train arriving at a station
 ---@param train LuaTrain
 ---@return SavedTrain
@@ -134,51 +162,29 @@ local function train_arrival(train)
 	local target_station = train.path_end_stop
 	if not target_station then return end
 	local train_force = get_train_force(train)
-	if not global.trains.data[train_force].stations[serpent.line(target_station.position)] then
-		global.trains.data[train_force].stations[serpent.line(target_station.position)] = {
-			visitors=0,
-			name=target_station.backer_name,
-			position=target_station.position,
-			surface=target_station.surface.name,
-			force=target_station.force.name,
-			unitnumber=target_station.unit_number
-		}
+
+	local saved_station = global.trains.data[train_force].stations[target_station.unit_number]
+	if not saved_station then
+		saved_station = create_station(target_station)
 	end
-	local saved_station = global.trains.data[train_force].stations[serpent.line(target_station.position)]
 	saved_station.visitors = saved_station.visitors + 1
 
 	local saved_train = global.trains.data[train_force].trains[train.id]
-	if not saved_train then
-		saved_train = create_train(train)
-	end
+	if not saved_train then saved_train = create_train(train) end
 	return saved_train
 end
 
 ---Handle a train departing from a station
 ---@param train LuaTrain
----@return SavedTrain
 local function train_departure(train)
 	local target_station = train.path_end_stop
 	if not target_station then return end
-	local train_force = get_train_force(train)
-	if not global.trains.data[train_force].stations[serpent.line(target_station.position)] then
-		global.trains.data[train_force].stations[serpent.line(target_station.position)] = {
-			visitors=0,
-			name=target_station.backer_name,
-			position=target_station.position,
-			surface=target_station.surface.name,
-			force=target_station.force.name,
-			unitnumber=target_station.unit_number
-		}
-	end
-	local saved_station = global.trains.data[train_force].stations[target_station.backer_name]
-	saved_station.visitors = saved_station.visitors + 1
 
-	local saved_train = global.trains.data[train_force].trains[train.id]
-	if not saved_train then
-		saved_train = create_train(train)
-	end
-	return saved_train
+	local train_force = get_train_force(train)
+	local saved_station = global.trains.data[train_force].stations[target_station.unit_number]
+	if not saved_station then saved_station = create_station(target_station) end
+	saved_station.visitors = saved_station.visitors + 1
+	store_saved_station(saved_station)
 end
 
 local function on_train_changed_state(event)
@@ -186,6 +192,7 @@ local function on_train_changed_state(event)
 		---@type LuaTrain
 		local train = event.train
 		local saved_train = get_saved_train(train)
+		if not saved_train then saved_train = create_train(train) end
 		
 		if train.state == defines.train_state.arrive_station then
 			train_arrival(train)
