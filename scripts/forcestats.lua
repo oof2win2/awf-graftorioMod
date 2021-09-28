@@ -2,7 +2,6 @@ local lib = {}
 
 lib.collect_production = function ()
 	for _, force in pairs(game.forces) do
-		if not global.output.stats[force.name] then global.output.stats[force.name] = {} end
 		---@class ProductionStatistics
 		---@field item_input table<string, double|uint64>
 		---@field item_output table<string, double|uint64>
@@ -99,8 +98,8 @@ lib.collect_loginet = function ()
 		}
 		for _, networks in pairs(force.logistic_networks) do
 			for _, network in pairs(networks) do
-				stats.available_construction_robots =  network.available_construction_robots
-				stats.all_construction_robots =  network.all_construction_robots
+				stats.available_construction_robots = network.available_construction_robots
+				stats.all_construction_robots = network.all_construction_robots
 
 				stats.available_logistic_robots = network.available_logistic_robots
 				stats.all_logistic_robots = network.all_logistic_robots
@@ -131,7 +130,7 @@ lib.collect_loginet = function ()
 				end
 			end
 		end
-		global.output[force.name].stats.robots = stats
+		global.output[force.name].robots = stats
 	end
 end
 
@@ -173,6 +172,9 @@ lib.events = {
 			}
 			force_research = global.output[research.force.name].research
 		end
+	end,
+	[defines.events.on_forces_merging] = function (evt)
+		
 	end
 }
 

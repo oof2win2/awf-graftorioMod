@@ -134,8 +134,8 @@ local function train_arrival(train)
 	local target_station = train.path_end_stop
 	if not target_station then return end
 	local train_force = get_train_force(train)
-	if not global.trains.data[train_force].stations[target_station.backer_name] then
-		global.trains.data[train_force].stations[target_station.backer_name] = {
+	if not global.trains.data[train_force].stations[serpent.line(target_station.position)] then
+		global.trains.data[train_force].stations[serpent.line(target_station.position)] = {
 			visitors=0,
 			name=target_station.backer_name,
 			position=target_station.position,
@@ -144,7 +144,7 @@ local function train_arrival(train)
 			unitnumber=target_station.unit_number
 		}
 	end
-	local saved_station = global.trains.data[train_force].stations[target_station.backer_name]
+	local saved_station = global.trains.data[train_force].stations[serpent.line(target_station.position)]
 	saved_station.visitors = saved_station.visitors + 1
 
 	local saved_train = global.trains.data[train_force].trains[train.id]
@@ -161,8 +161,8 @@ local function train_departure(train)
 	local target_station = train.path_end_stop
 	if not target_station then return end
 	local train_force = get_train_force(train)
-	if not global.trains.data[train_force].stations[target_station.backer_name] then
-		global.trains.data[train_force].stations[target_station.backer_name] = {
+	if not global.trains.data[train_force].stations[serpent.line(target_station.position)] then
+		global.trains.data[train_force].stations[serpent.line(target_station.position)] = {
 			visitors=0,
 			name=target_station.backer_name,
 			position=target_station.position,
@@ -274,6 +274,18 @@ lib.events = {
 	[defines.events.on_train_created] = on_train_created,
 	[defines.events.on_force_created] = function (evt)
 		global.output[evt.force.name].trains = {}
+	end,
+	[defines.events.on_forces_merging] = function (evt)
+		---@type LuaForce
+		local old_force = evt.source
+		---@type LuaForce
+		local destination = evt.destination
+		for id, saved_train in global.trains.data[old_force.name].trains do
+			global.trains.data[destination.name].trains[id] = table.deep_copy(saved_train)
+		end
+		for position, saved_station in global.trains.data[old_force.name].stations do
+			global.trains.data[destination.name].stations[position] = table.deep_copy(saved_station)
+		end
 	end
 }
 
@@ -283,7 +295,6 @@ lib.on_init = function ()
 		global.output[force.name].trains = {}
 	end
 
-	
 	global.trains = {
 		---@type table<string, ForceTrainStats>
 		data={},
