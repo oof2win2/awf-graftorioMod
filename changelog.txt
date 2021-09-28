@@ -1,7 +1,10 @@
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.5
 Date: ????
+  Bugfixes:
+    - Fixed research not showing up
   Changes:
+    - Added the "rcon" option to the command to send the output to RCON rather than a file
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.4
 Date: 2021-09-28

@@ -147,60 +147,41 @@ lib.events = {
 	[defines.events.on_research_finished] = function (evt)
 		local research = evt.research
 		if not global.output[research.force.name] then global.output[research.force.name] = {} end
-		if not global.output[research.force.name].other then global.output[research.force.name].other = {} end
+		if not global.output[research.force.name].research then global.output[research.force.name].research = {} end
 		
-		local force_research = global.output[research.force.name].other.research
-		if not force_research then
-			global.output[research.force.name].other.research = {
-				current=nil,
-				queue={},
-			}
-			force_research = global.output[research.force.name].other.research
-		end
+		local force_research = global.output[research.force.name].research or {}
+		table.remove(force_research, 1)
+		global.output[research.force.name].research = force_research
 	end,
 	[defines.events.on_research_started] = function (evt)
 		-- move queue up
 		local research = evt.research
-		if not global.output[research.force.name] then global.output[research.force.name] = {} end
-		if not not global.output[research.force.name].other then global.output[research.force.name].other = {} end
+		if not global.output[research.force.name].research then global.output[research.force.name].research = {} end
 
-		local force_research = global.output[research.force.name].research
-		if not force_research then
-			global.output[research.force.name].research = {
-				current=nil,
-				queue={},
-			}
-			force_research = global.output[research.force.name].research
-		end
+		local force_research = global.output[research.force.name].research or {}
+		table.remove(force_research, 1)
+		global.output[research.force.name].research = force_research
 	end,
-	[defines.events.on_forces_merging] = function (evt)
-		
-	end
 }
 
 lib.on_nth_tick = {
 	[60] = function ()
 		for _, force in pairs(game.forces) do
-			if not global.output[force.name].other then global.output[force.name].other = {} end
+			if not global.output[force.name].research then global.output[force.name].research = {} end
 
-			local force_research = global.output[force.name].research
-			if not force_research then
-				global.output[force.name].research = {
-					current=nil,
-					queue={},
-				}
-				force_research = global.output[force.name].research
-			end
+			local force_research = global.output[force.name].research or {}
 
-			force_research.queue = {}
+			force_research = {}
+			-- this works even if the queue is disabled, but it will always be just 1 long in that case
 			for _, research in pairs(force.research_queue) do
-				table.insert(force_research.queue, {
+				table.insert(force_research, {
 					name=research.name,
 					level=research.level,
 					progress=force.get_saved_technology_progress(research) or 0,
 				})
 			end
-			if force_research.queue[1] then force_research.queue[1].progress = force.research_progress end
+
+			global.output[force.name].research = force_research
 		end
 	end,
 }

@@ -18,11 +18,9 @@ end
 lib.migrations = {
 	["2.0.0"] = function ()
 		global.output = {}
-	for _, force in pairs(game.forces) do
-		global.output[force.name] = {
-			other = {}
-		}
-	end
+		for _, force in pairs(game.forces) do
+			global.output[force.name] = {}
+		end
 	end
 }
 
@@ -40,12 +38,15 @@ lib.migrations = {
 lib.collect_other = function ()
 	for _, force in pairs(game.forces) do
 		---@type OtherStatistics
-		global.output[force.name].other.evolution = {
+		local other = global.output[force.name].other or {}
+		
+		other.evolution = {
 			evolution_factor=force.evolution_factor,
 			evolution_factor_by_pollution=force.evolution_factor_by_pollution,
 			evolution_factor_by_time=force.evolution_factor_by_time,
 			evolution_factor_by_killing_spawners=force.evolution_factor_by_killing_spawners
 		}
+		global.output[force.name].other = other
 	end
 end
 
