@@ -24,6 +24,12 @@ data:extend(
 		name = "graftorio-checking-rate",
 		setting_type = "startup",
 		default_value = "10"
+	},
+	{
+		type = "bool-setting",
+		name = "graftorio-train-tracking",
+		setting_type="runtime-global",
+		default_value=true
 	}
   }
 )

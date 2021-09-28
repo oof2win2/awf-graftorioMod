@@ -13,11 +13,13 @@ commands.add_command("collectdata", nil, function (params)
 	statics.collect_statics()
 	power.collect_power()
 	trains.collect_trains()
-
+	
+	game.print("done")
 	game.write_file("game.txt", game.table_to_json(global.output), false)
 end)
 
+handler.add_lib(general)
 handler.add_lib(forcestats)
 handler.add_lib(statics)
 handler.add_lib(power)
-handler.add_lib(general)
+handler.add_lib(trains)
