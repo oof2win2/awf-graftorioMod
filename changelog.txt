@@ -2,6 +2,9 @@
 Version: 2.0.6
 Date: ????
   Changes:
+    - Train force is no longer split into pushers, only first loco
+  Bugfixes:
+    - Train force works with saved trains with extra param
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.5
 Date: 2021-09-28
