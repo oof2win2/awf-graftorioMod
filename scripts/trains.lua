@@ -57,15 +57,17 @@ end
 
 ---Get a force of a train
 ---@param train LuaTrain|SavedTrain
+---@param traintype string
 ---@return string
-local function get_train_force(train)
-	local name
-	if rawget(train, "force") ~= nil then return rawget(train, "force") end -- this is to bypass the typecheck and make it work for SavedTrain
-	name = name or (train.locomotives.front_movers and train.locomotives.front_movers[1] and train.locomotives.front_movers[1].force.name)
-	name = name or (train.locomotives.back_movers and train.locomotives.back_movers[1] and train.locomotives.back_movers[1].force.name)
-	name = name or (train.cargo_wagons[1] and train.cargo_wagons[1].force.name)
-	name = name or (train.fluid_wagons[1] and train.fluid_wagons[1].force.name)
-	return name
+local function get_train_force(train, traintype)
+	local name = nil
+	if traintype == "SavedTrain" then
+		return train.force
+	else
+		name = name or (train.locomotives[1] and train.locomotives[1].force.name)
+		name = name or (train.cargo_wagons[1] and train.cargo_wagons[1].force.name)
+		name = name or (train.fluid_wagons[1] and train.fluid_wagons[1].force.name)
+	end
 end
 
 ---@param train LuaTrain
@@ -94,9 +96,10 @@ local function create_train(train)
 end
 
 ---@param train LuaTrain|SavedTrain
+---@param type string
 ---@return nil
-local function remove_train(train)
-	global.trains.data[get_train_force(train)].trains[train.id] = nil
+local function remove_train(train, type)
+	global.trains.data[get_train_force(train, type)].trains[train.id] = nil
 end
 
 ---@param train LuaTrain
@@ -157,7 +160,6 @@ end
 
 --- Handle a train arriving at a station
 ---@param train LuaTrain
----@return SavedTrain
 local function train_arrival(train)
 	local target_station = train.path_end_stop
 	if not target_station then return end
@@ -168,10 +170,6 @@ local function train_arrival(train)
 		saved_station = create_station(target_station)
 	end
 	saved_station.visitors = saved_station.visitors + 1
-
-	local saved_train = global.trains.data[train_force].trains[train.id]
-	if not saved_train then saved_train = create_train(train) end
-	return saved_train
 end
 
 ---Handle a train departing from a station
@@ -261,8 +259,8 @@ local function merge_saved_trains(id1, id2, new_train)
 	new_saved_train.travelling_time = train1.travelling_time + train2.travelling_time
 	new_saved_train.waiting_time_signal = train1.waiting_time_signal + train2.waiting_time_signal
 	new_saved_train.waiting_time_station = train1.waiting_time_station + train2.waiting_time_station
-	remove_train(train1)
-	remove_train(train2)
+	remove_train(train1, "SavedTrain")
+	remove_train(train2, "SavedTrain")
 
 	store_saved_train(new_saved_train)
 	return new_saved_train
