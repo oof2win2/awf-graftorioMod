@@ -35,16 +35,10 @@ local function on_destroyed (evt)
 	end
 end
 
--- makes the networks in global.power.networks have ignored if their power switches are disconnected
-local function get_unignored_network_entities()
-	for _, switch in pairs(global.power.switches) do
-		local surface = game.get_surface(switch.surface)
-		local entities = surface.find_entities_filtered{
-			position=switch.position,
-			unitnumber=switch.unitnumber
-		}
-		local entity = entities[1]
-	end
+---@param surface LuaSurface
+---@param unit_number number
+local function remove_power_pole(surface, unit_number)
+
 end
 
 lib.collect_power = function ()
@@ -60,21 +54,23 @@ lib.collect_power = function ()
 		}
 		
 		local surfaces = {}
-		for _, network in pairs(networks) do
+		for networkindex, network in pairs(networks) do
 			---@type LuaSurface
 			local surface = surfaces[network.surface] or game.get_surface(network.surface)
 			if surfaces[network.surface] == nil then surfaces[network.surface] = surface end
 	
 			local entity = surface.find_entities_filtered{
-				position=network.position,
 				unitnumber=network.unitnumber,
-				type=network.type
 			}[1]
-			for _, value in pairs(entity.electric_network_statistics.input_counts) do
-				statistics.input = statistics.input + value
-			end
-			for _, value in pairs(entity.electric_network_statistics.output_counts) do
-				statistics.output = statistics.output + value
+			if entity then
+				for _, value in pairs(entity.electric_network_statistics.input_counts) do
+					statistics.input = statistics.input + value
+				end
+				for _, value in pairs(entity.electric_network_statistics.output_counts) do
+					statistics.output = statistics.output + value
+				end
+			else
+				networks[networkindex] = nil
 			end
 		end
 		global.output[force.name].power = statistics

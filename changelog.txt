@@ -2,6 +2,7 @@
 Version: 2.0.7
 Date: ????
   Changes:
+    - Find power poles only using entity unit number
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.6
 Date: 2021-09-30
