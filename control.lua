@@ -16,7 +16,6 @@ commands.add_command("collectdata", nil, function (params)
 	trains.collect_trains()
 
 	if params.parameter == "rcon" then
-		game.print("RCON!")
 		rcon.print(game.table_to_json(global.output))
 	else
 		game.write_file("game.prom", game.table_to_json(global.output), false)
